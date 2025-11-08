@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Question for a New Friend</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Font Setup */
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        
+        :root {
+            --primary-color: #ec4899; /* Pink 500 (Sweet theme) */
+            --secondary-color: #fce7f3; /* Pink 100 */
+            --bg-color: #0c0a09; /* Stone 900 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            /* Allow scrolling now that content is added */
+            overflow-y: auto; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 0; /* Add padding for scroll */
+        }
+
+        /* Proposal Text Style */
+        .proposal-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            line-height: 1.2;
+            color: white;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        /* 3D Proposal Card Tilt (Still looks cool!) */
+        @keyframes subtleTilt {
+            0%, 100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1); }
+            50% { transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.01); }
+        }
+
+        #proposal-screen, #celebration-screen {
+            animation: subtleTilt 20s ease-in-out infinite;
+        }
+
+
+        /* --- Custom Heart Animation (Floating Background) --- */
+        .heart-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute;
+            opacity: 0;
+            animation: floatUp 15s linear infinite;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Evasive Button Animation (Humorous Evasion) */
+        #no-btn-container {
+            transition: all 0.1s ease-out; /* Smooth movement when 'No' is clicked */
+            position: relative;
+        }
+
+        /* Confetti Burst (Celebration) */
+        .confetti {
+            position: fixed;
+            top: -10%;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            border-radius: 50%;
+            transform-origin: 50% 50%;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% { opacity: 1; transform: translateY(0vh) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Loading Spinner (No longer used, but kept in CSS if needed later) */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #ec4899;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Mini Game Styles --- */
+
+        /* Game 1: Catch the Hearts */
+        @keyframes fall {
+            from { transform: translateY(-50px) rotate(-60deg); opacity: 1; }
+            to   { transform: translateY(300px) rotate(60deg); opacity: 0; }
+        }
+        .falling-heart {
+            position: absolute;
+            font-size: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+            opacity: 0;
+            animation: fall 5s linear forwards;
+        }
+
+        /* Game 2: Memory Match */
+        .game-card {
+            width: 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            color: var(--secondary-color); /* Hides emoji */
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s;
+            transform-style: preserve-3d;
+            user-select: none;
+            border: 2px solid var(--primary-color);
+        }
+        .game-card.flipped {
+            background-color: var(--bg-color);
+            color: white; /* Reveals emoji */
+            transform: rotateY(180deg);
+        }
+        .game-card.matched {
+            background-color: #22c55e; /* Green 500 */
+            color: white;
+            opacity: 0.7;
+            cursor: default;
+            transform: rotateY(180deg) scale(0.9);
+        }
+
+        /* Game 3: Friendship Libs (REMOVED) */
+        /* .lib-input ... */
+
+        /* NEW Game 3: Heart Clicker */
+        .heart-clicker-button {
+            font-size: 8rem;
+            line-height: 1;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease, text-shadow 0.1s ease;
+        }
+        .heart-clicker-button:active {
+            transform: scale(0.9);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        @keyframes pop {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .popped-heart {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--primary-color);
+            animation: pop 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Floating Background Hearts -->
+    <div class="heart-container" id="heart-bg"></div>
+
+    <!-- Main Content Container -->
+    <div id="app-container" class="relative w-full max-w-lg mx-auto z-10">
+
+        <!-- 1. Main Proposal Screen (Friendship) -->
+        <div id="proposal-screen" class="p-8 bg-black/70 backdrop-blur-sm rounded-3xl shadow-2xl border border-pink-700/50 text-center transition-opacity duration-1000">
+            
+            <h1 class="proposal-text mb-8">
+                Hey! This is a little different...
+            </h1>
+            <p class="text-white/80 mb-6 text-xl font-light">
+                I really enjoy our conversations. We even share a secret love for **Rasmalai** and **Chole Kulche**!
+            </p>
+            <p class="text-white/80 mb-10 text-xl font-light">
+                I'd love to make this official.
+            </p>
+
+            <h2 class="proposal-text text-3xl mb-12">
+                Will you be my friend?
+            </h2>
+
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-6">
+                <!-- YES Button: Now calls goToCelebration directly -->
+                <button id="yes-btn" onclick="goToCelebration()"
+                    class="w-full sm:w-auto px-10 py-4 bg-pink-600 text-white text-xl font-bold rounded-full shadow-lg shadow-pink-500/50 hover:bg-pink-500 transition duration-300 transform hover:scale-105">
+                    Absolutely!
+                </button>
+
+                <!-- NO Button Container (for humorous evasion) -->
+                <div id="no-btn-container" class="w-full sm:w-auto h-16 flex items-center justify-center">
+                    <button id="no-btn"
+                        class="px-10 py-3 bg-yellow-600/10 text-yellow-500/80 text-lg rounded-full hover:bg-yellow-600/20 transition duration-300">
+                        Never!
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 2. Celebration Screen (Hidden initially) -->
+        <div id="celebration-screen" class="hidden p-8 bg-black/80 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-300 text-center transition-opacity duration-1000">
+            <div class="text-6xl mb-6 animate-pulse">
+                🤝🎉
+            </div>
+            <h2 class="proposal-text text-4xl mb-6 text-pink-300">
+                Best friends forever!
+            </h2>
+            <p class="text-white text-xl font-light mb-8">
+                Let's celebrate our new friendship with the biggest plate of **Chole Kulche**!
+            </p>
+            
+            <div id="friendship-note" class="p-4 bg-pink-900/50 rounded-xl text-white italic text-lg border-l-4 border-pink-300">
+                "P.S. To many more shared meals and great memories."
+            </div>
+            
+            <!-- === NEW MINI GAMES SECTION === -->
+            <div class="mt-10 pt-6 border-t border-pink-700/50">
+                <h3 class="text-white/90 text-2xl font-semibold mb-4" style="font-family: 'Dancing Script', cursive;">
+                    Let's Play!
+                </h3>
+                <p class="text-white/70 mb-6">A true friendship starts with a few mini-games.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="startGame1()" class="px-5 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-400 transition shadow-lg shadow-pink-500/30">
+                        Catch the Hearts
+                    </button>
+                    <button onclick="startGame2()" class="px-5 py-2 bg-teal-500 text-white rounded-full hover:bg-teal-400 transition shadow-lg shadow-teal-500/30">
+                        Friendship Match
+                    </button>
+                    <!-- This button now correctly calls the new function -->
+                    <button onclick="startGame3_HeartClicker()" class="px-5 py-2 bg-red-500 text-white rounded-full hover:bg-red-400 transition shadow-lg shadow-red-500/30">
+                        Heart Clicker
+                    </button>
+                </div>
+
+                <!-- Game Content Area -->
+                <div id="game-container" class="mt-6 p-4 bg-black/30 rounded-lg min-h-[300px] text-white/90">
+                    <p class="text-center text-white/50 pt-24">Select a game to begin!</p>
+                </div>
+            </div>
+            <!-- === END MINI GAMES SECTION === -->
+
+        </div>
+    </div>
+
+    <script>
+        
+        // --- Global Variables ---
+        const proposalScreen = document.getElementById('proposal-screen');
+        const celebrationScreen = document.getElementById('celebration-screen');
+        const noBtnContainer = document.getElementById('no-btn-container');
+        const noBtn = document.getElementById('no-btn');
+        // We get gameContainer later because it's hidden on load
+        
+        // --- Utility Functions ---
+
+        // Helper to display temp message (since alert() is forbidden)
+        function showTempMessage(message) {
+            const msgBox = document.createElement('div');
+            msgBox.className = 'fixed top-0 left-1/2 -translate-x-1/2 mt-4 p-4 bg-pink-600 text-white rounded-xl shadow-xl z-50 transition-opacity duration-300';
+            msgBox.textContent = message;
+            document.body.appendChild(msgBox);
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+                setTimeout(() => msgBox.remove(), 300);
+            }, 2000);
+        }
+
+        // --- 1. Background Animation (Existing Logic) ---
+        function createFloatingHeart() {
+            const container = document.getElementById('heart-bg');
+            if (!container) return; // Guard clause
+            const heart = document.createElement('div');
+            
+            // Random styling for variety
+            const size = Math.random() * 10 + 10; // 10px to 20px
+            const left = Math.random() * 100; // 0% to 100%
+            const duration = Math.random() * 8 + 10; // 10s to 18s
+
+            heart.className = 'floating-heart';
+            heart.textContent = '♡';
+            heart.style.left = `${left}vw`;
+            heart.style.fontSize = `${size}px`;
+            heart.style.color = Math.random() < 0.5 ? 'var(--primary-color)' : 'white';
+            heart.style.animationDuration = `${duration}s`;
+            heart.style.animationDelay = `-${Math.random() * 15}s`; // Start at random points in animation cycle
+            
+            container.appendChild(heart);
+            
+            // Clean up old hearts
+            setTimeout(() => heart.remove(), duration * 1000);
+        }
+
+        // Initialize background hearts
+        for (let i = 0; i < 20; i++) {
+            createFloatingHeart();
+        }
+        setInterval(createFloatingHeart, 1000);
+
+
+        // --- 2. Evasive "No" Button Logic (Existing Logic) ---
+
+        function moveNoButton() {
+            if (!noBtnContainer || noBtnContainer.classList.contains('hidden')) return; 
+
+            const maxOffset = 150; 
+            
+            const newX = (Math.random() * maxOffset * 2) - maxOffset;
+            const newY = (Math.random() * 50 * 2) - 50;
+
+            noBtnContainer.style.position = 'absolute';
+            noBtnContainer.style.transform = `translate(${newX}px, ${newY}px)`;
+            
+            noBtn.textContent = 'Can\'t catch me!';
+            noBtn.classList.remove('bg-yellow-600/10');
+            noBtn.classList.add('bg-red-400');
+            
+            setTimeout(() => {
+                noBtn.textContent = 'Never!';
+                noBtn.classList.remove('bg-red-400');
+                noBtn.classList.add('bg-yellow-600/10');
+                noBtnContainer.style.transform = `translate(0, 0)`;
+            }, 300);
+        }
+
+        if (noBtnContainer) {
+            noBtnContainer.addEventListener('mouseover', moveNoButton);
+            noBtnContainer.addEventListener('touchstart', moveNoButton);
+        }
+
+        if (noBtn) {
+            noBtn.addEventListener('click', () => {
+                if (noBtnContainer) {
+                    noBtnContainer.style.position = 'relative';
+                    noBtnContainer.style.transform = `none`;
+                }
+
+                const msgBox = document.createElement('div');
+                msgBox.className = 'fixed inset-0 flex items-center justify-center bg-black/80 z-50 p-4';
+                msgBox.innerHTML = `
+                    <div class="bg-pink-800 p-8 rounded-xl text-center shadow-2xl max-w-xs">
+                        <p class="text-white text-lg font-semibold">
+                            Don't be silly! We have to share that Rasmalai. 😉 Click 'Absolutely!'
+                        </p>
+                        <button onclick="this.parentElement.parentElement.remove()" class="mt-4 px-4 py-2 bg-pink-400 rounded-full text-white text-sm">
+                            Fine, okay.
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(msgBox);
+            });
+        }
+
+
+        // --- 3. Proposal Success Handler ---
+        function goToCelebration() {
+            // Hide proposal, show celebration immediately
+            if (proposalScreen) proposalScreen.classList.add('hidden');
+            if (celebrationScreen) celebrationScreen.classList.remove('hidden');
+            triggerConfetti();
+        }
+
+        // --- 4. Celebration Confetti (Existing Logic) ---
+        function triggerConfetti() {
+            const colors = ['#f472b6', '#ec4899', '#fce7f3', '#fff']; // Pink shades and white
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.animationDelay = `${Math.random() * -2}s`;
+                confetti.style.animationDuration = `${Math.random() * 2 + 3}s`; // 3s to 5s
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 6000);
+            }
+        }
+
+        // --- 5. Removed Gemini API Features ---
+        // All functions (generateFriendshipActivity, generateFriendshipCompliment, copyCompliment, fetchWithRetry)
+        // and related variables have been removed.
+
+        // --- Initial Setup (Required for the 'No' button to be relative first) ---
+        if (noBtnContainer) {
+            noBtnContainer.style.position = 'relative';
+        }
+
+        // --- 6. NEW MINI GAME LOGIC ---
+
+        // Game 1: Catch the Hearts
+        function startGame1() {
+            const gameContainer = document.getElementById('game-container');
+            if (!gameContainer) return;
+
+            gameContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-lg font-semibold">Catch the Hearts!</h4>
+                    <div class="text-lg">Score: <span id="score" class="font-bold">0</span></div>
+                </div>
+                <div id="game-area-1" class="relative w-full h-64 bg-pink-900/50 rounded-lg overflow-hidden"></div>
+                <div id="game-timer" class="mt-2 text-center text-xl">Time: <span id="time-left">15</span>s</div>
+            `;
+
+            let score = 0;
+            let timeLeft = 15;
+            const scoreDisplay = document.getElementById('score');
+            const timerDisplay = document.getElementById('time-left');
+            const gameArea = document.getElementById('game-area-1');
+            const heartEmojis = ['💖', '❤️', '💕', '💗', '💝'];
+
+            const heartInterval = setInterval(() => {
+                if (timeLeft <= 0) return;
+
+                const heart = document.createElement('div');
+                heart.className = 'falling-heart';
+                heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+                heart.style.left = `${Math.random() * 90}%`;
+                heart.style.animationDuration = `${Math.random() * 2 + 3}s`; // 3-5s fall time
+
+                heart.addEventListener('click', () => {
+                    score++;
+                    scoreDisplay.textContent = score;
+                    heart.remove();
+                });
+
+                gameArea.appendChild(heart);
+
+                setTimeout(() => {
+                    if (heart) heart.remove();
+                }, 5000); // Remove after 5s regardless
+
+            }, 500); // New heart every 500ms
+
+            const gameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(heartInterval);
+                    clearInterval(gameTimer);
+                    gameArea.innerHTML = `<div class="flex items-center justify-center h-full text-2xl font-bold">Time's Up! Final Score: ${score}</div>`;
+                }
+            }, 1000);
+        }
+
+        // Game 2: Friendship Match
+        function startGame2() {
+            const gameContainer = document.getElementById('game-container');
+            if (!gameContainer) return;
+
+            const emojis = ['💖', '💖', '✨', '✨', '😊', '😊', '🤝', '🤝', '🎉', '🎉', '💌', '💌'];
+            emojis.sort(() => 0.5 - Math.random()); // Shuffle
+
+            gameContainer.innerHTML = `
+                <h4 class="text-lg font-semibold mb-4 text-center">Friendship Match</h4>
+                <div id="game-grid" class="grid grid-cols-4 gap-3 justify-center max-w-xs mx-auto">
+                    ${emojis.map(emoji => `
+                        <div class="game-card" data-emoji="${emoji}"></div>
+                    `).join('')}
+                </div>
+                <div id="match-status" class="mt-4 text-center"></div>
+            `;
+
+            const cards = document.querySelectorAll('.game-card');
+            const statusDisplay = document.getElementById('match-status');
+            let flippedCards = [];
+            let matchedPairs = 0;
+            let isChecking = false;
+
+            cards.forEach(card => card.addEventListener('click', () => {
+                if (isChecking || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                    return;
+                }
+
+                card.classList.add('flipped');
+                card.textContent = card.dataset.emoji;
+                flippedCards.push(card);
+
+                if (flippedCards.length === 2) {
+                    isChecking = true;
+                    const [card1, card2] = flippedCards;
+
+                    if (card1.dataset.emoji === card2.dataset.emoji) {
+                        // Match
+                        setTimeout(() => {
+                            card1.classList.add('matched');
+                            card2.classList.add('matched');
+                            flippedCards = [];
+                            isChecking = false;
+                            matchedPairs++;
+                            if (matchedPairs === emojis.length / 2) {
+                                statusDisplay.textContent = "You found all the pairs! Great job!";
+                            }
+                        }, 500);
+                    } else {
+                        // No Match
+                        setTimeout(() => {
+                            card1.classList.remove('flipped');
+                            card2.classList.remove('flipped');
+                            card1.textContent = '';
+                            card2.textContent = '';
+                            flippedCards = [];
+                            isChecking = false;
+                        }, 1000);
+                    }
+                }
+            }));
+        }
+
+        // Game 3: Heart Clicker (Replaces Friendship Libs)
+        function startGame3_HeartClicker() {
+            const gameContainer = document.getElementById('game-container');
+            if (!gameContainer) return;
+
+            gameContainer.innerHTML = `
+                <h4 class="text-lg font-semibold mb-2 text-center">Heart Clicker</h4>
+                <p class="text-center text-white/70 mb-4">Click the heart as fast as you can in 10 seconds!</p>
+                <div class="flex justify-between items-center mb-4 max-w-xs mx-auto">
+                    <div class="text-xl">Score: <span id="clicker-score" class="font-bold">0</span></div>
+                    <div class="text-xl">Time: <span id="clicker-time" class="font-bold">10</span>s</div>
+                </div>
+                <div id="game-area-3" class="relative w-full h-48 flex items-center justify-center">
+                    <div id="heart-click-btn" class="heart-clicker-button" style="color: var(--primary-color);">❤️</div>
+                </div>
+            `;
+
+            let score = 0;
+            let timeLeft = 10;
+            const scoreDisplay = document.getElementById('clicker-score');
+            const timerDisplay = document.getElementById('clicker-time');
+            const gameArea = document.getElementById('game-area-3');
+            const heartBtn = document.getElementById('heart-click-btn');
+            let gameActive = true;
+
+            heartBtn.addEventListener('click', (e) => {
+                if (!gameActive) return;
+                
+                score++;
+                scoreDisplay.textContent = score;
+
+                // Create a popped heart animation
+                const pop = document.createElement('div');
+                pop.className = 'popped-heart';
+                pop.textContent = '❤️';
+                // Position the pop at the click location relative to the game area
+                const rect = gameArea.getBoundingClientRect();
+                pop.style.left = `${e.clientX - rect.left}px`;
+                pop.style.top = `${e.clientY - rect.top}px`;
+
+                gameArea.appendChild(pop);
+                setTimeout(() => pop.remove(), 500);
+            });
+
+            const gameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    gameActive = false;
+                    heartBtn.style.display = 'none';
+                    gameArea.innerHTML = `<div class="flex items-center justify-center h-full text-2xl font-bold">Time's Up! Final Score: ${score}</div>`;
+                }
+            }, 1000);
+        }
+
+        // Removed the old startGame3 and revealLibs functions
+
+    </script>
+</body>
+</html>
